@@ -1,10 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import {
+  FaFilm,
+  FaTv,
+  FaGamepad,
+  FaStar,
+  FaRegStar,
+  FaStarHalfAlt,
+  FaBolt,
+  FaFire,
+} from "react-icons/fa";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Category = "All" | "Movies" | "Shows" | "Games";
+export type Category = "All" | "Movies" | "Shows" | "Games";
 
 interface Review {
   id: number;
@@ -159,33 +171,33 @@ const CARD_GRADIENTS: Record<string, string> = {
   game3: "from-cyan-900 via-sky-800 to-cyan-950",
 };
 
-const CATEGORY_ICONS: Record<Category, string> = {
-  All: "✦",
-  Movies: "🎬",
-  Shows: "📺",
-  Games: "🎮",
+export const CATEGORY_ICON_COMPONENTS: Record<Category, React.ElementType> = {
+  All: FaBolt,
+  Movies: FaFilm,
+  Shows: FaTv,
+  Games: FaGamepad,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Movies: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-  Shows: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-  Games: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+  Movies: "bg-amber-100 text-amber-700 border-amber-200",
+  Shows: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  Games: "bg-violet-100 text-violet-700 border-violet-200",
 };
 
 function StarRating({ rating }: { rating: number }) {
-  const stars = Math.round(rating / 2); // convert to /5
+  // Convert /10 rating to /5 stars with half-star support
+  const out5 = rating / 2;
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <svg
-          key={s}
-          className={`w-3.5 h-3.5 ${s <= stars ? "text-amber-400" : "text-white/20"}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
+      {[1, 2, 3, 4, 5].map((s) => {
+        if (out5 >= s) {
+          return <FaStar key={s} className="w-3 h-3 text-yellow-400" />;
+        } else if (out5 >= s - 0.5) {
+          return <FaStarHalfAlt key={s} className="w-3 h-3 text-yellow-400" />;
+        } else {
+          return <FaRegStar key={s} className="w-3 h-3 text-slate-300" />;
+        }
+      })}
     </div>
   );
 }
@@ -194,46 +206,54 @@ function StarRating({ rating }: { rating: number }) {
 
 function ReviewCard({ review }: { review: Review }) {
   return (
-    <article className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/8 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40 cursor-pointer">
+    <article className="group relative rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl border border-slate-200/60 hover:border-slate-300/80 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-slate-200/60 cursor-pointer">
       {/* Gradient banner */}
-      <div className={`h-28 bg-gradient-to-br ${CARD_GRADIENTS[review.image]} relative`}>
-        <div className="absolute inset-0 bg-black/30" />
+      <div className={`h-32 bg-gradient-to-br ${CARD_GRADIENTS[review.image]} relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
+        {/* Decorative subtle overlay */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent" />
+
         {/* Score badge */}
-        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm border border-white/20 rounded-xl px-2.5 py-1">
-          <span className="text-white font-bold text-sm">{review.rating}</span>
-          <span className="text-white/50 text-xs">/10</span>
+        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md shadow-sm rounded-2xl px-3 py-1.5 transform group-hover:scale-105 transition-transform duration-300 border border-slate-100/50">
+          <span className="text-slate-900 font-black text-sm">{review.rating}</span>
+          <span className="text-slate-500 font-medium text-xs">/10</span>
         </div>
         {/* Category tag */}
         <div className="absolute top-3 left-3">
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${CATEGORY_COLORS[review.category]}`}>
-            {CATEGORY_ICONS[review.category as Category]} {review.category}
-          </span>
+          {(() => {
+            const Icon = CATEGORY_ICON_COMPONENTS[review.category as Category];
+            return (
+              <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md ${CATEGORY_COLORS[review.category]}`}>
+                <Icon className="w-3 h-3" /> {review.category}
+              </span>
+            );
+          })()}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <div className="mb-2">
-          <h3 className="text-white font-bold text-base leading-tight group-hover:text-amber-300 transition-colors">
+      <div className="p-5">
+        <div className="mb-3">
+          <h3 className="text-slate-900 font-extrabold text-lg leading-tight group-hover:text-yellow-600 transition-colors duration-300 line-clamp-1">
             {review.title}
           </h3>
-          <p className="text-white/40 text-xs mt-0.5">
+          <p className="text-slate-500 text-xs mt-0.5">
             {review.year} · {review.genre}
           </p>
         </div>
 
         <StarRating rating={review.rating} />
 
-        <p className="text-white/60 text-xs leading-relaxed mt-3 line-clamp-3">
+        <p className="text-slate-600 font-medium text-sm leading-relaxed mt-4 line-clamp-3">
           {review.summary}
         </p>
 
         {/* Reviewer */}
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/8">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+        <div className="flex items-center gap-2.5 mt-5 pt-4 border-t border-slate-200/50">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 shadow-sm shadow-amber-500/30">
             {review.avatar}
           </div>
-          <span className="text-white/40 text-xs">{review.reviewer}</span>
+          <span className="text-slate-600 font-semibold text-xs">{review.reviewer}</span>
         </div>
       </div>
     </article>
@@ -244,38 +264,43 @@ function ReviewCard({ review }: { review: Review }) {
 
 function FeaturedCard({ review }: { review: Review }) {
   return (
-    <article className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${CARD_GRADIENTS[review.image]} h-full min-h-[220px] cursor-pointer group`}>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+    <article className={`relative rounded-3xl overflow-hidden bg-gradient-to-br ${CARD_GRADIENTS[review.image]} h-full min-h-[260px] cursor-pointer group shadow-xl shadow-slate-300/40 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-300/60 transition-all duration-500`}>
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-black/10 group-hover:from-slate-900/95 transition-colors duration-500" />
 
       {/* Category + year */}
-      <div className="absolute top-4 left-4 flex items-center gap-2">
-        <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${CATEGORY_COLORS[review.category]}`}>
-          {CATEGORY_ICONS[review.category as Category]} {review.category}
-        </span>
-        <span className="text-white/50 text-xs">{review.year}</span>
+      <div className="absolute top-5 left-5 flex items-center gap-2.5 z-10">
+        {(() => {
+          const Icon = CATEGORY_ICON_COMPONENTS[review.category as Category];
+          return (
+            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md ${CATEGORY_COLORS[review.category]}`}>
+              <Icon className="w-3 h-3" /> {review.category}
+            </span>
+          );
+        })()}
+        <span className="text-white/90 font-bold text-xs shadow-sm shadow-black/20 px-2.5 py-1 bg-white/10 rounded-full backdrop-blur-md border border-white/20">{review.year}</span>
       </div>
 
       {/* Score */}
-      <div className="absolute top-4 right-4 flex flex-col items-end">
-        <div className="text-3xl font-black text-white leading-none">{review.rating}</div>
-        <div className="text-white/50 text-xs">/10</div>
+      <div className="absolute top-5 right-5 flex flex-col items-end z-10">
+        <div className="text-4xl font-black text-white leading-none drop-shadow-md transform group-hover:scale-105 transition-transform duration-300">{review.rating}</div>
+        <div className="text-white/80 font-bold text-xs drop-shadow-md">/10</div>
       </div>
 
       {/* Bottom content */}
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        <h3 className="text-white font-black text-xl leading-tight group-hover:text-amber-300 transition-colors">
+      <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+        <h3 className="text-white font-black text-2xl leading-tight group-hover:text-yellow-400 transition-colors drop-shadow-md mb-1">
           {review.title}
         </h3>
-        <p className="text-white/50 text-xs mt-0.5 mb-2">{review.genre}</p>
+        <p className="text-white/70 font-semibold text-xs mb-3 drop-shadow-sm uppercase tracking-wide">{review.genre}</p>
         <StarRating rating={review.rating} />
-        <p className="text-white/70 text-xs leading-relaxed mt-2 line-clamp-2">
+        <p className="text-white/90 font-medium text-sm leading-relaxed mt-3 line-clamp-2 drop-shadow-md">
           {review.summary}
         </p>
-        <div className="flex items-center gap-2 mt-3">
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-[9px] font-bold">
+        <div className="flex items-center gap-2.5 mt-4 pt-4 border-t border-white/10">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-white text-[10px] font-bold shadow-md">
             {review.avatar}
           </div>
-          <span className="text-white/40 text-xs">{review.reviewer}</span>
+          <span className="text-white/90 font-semibold text-xs drop-shadow-md">{review.reviewer}</span>
         </div>
       </div>
     </article>
@@ -296,43 +321,23 @@ export default function Home() {
       : REVIEWS.filter((r) => r.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#0c0c0f] text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* ── Nav ── */}
-      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0c0c0f]/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black tracking-tight bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-              Blitz Critics
-            </span>
-            <span className="text-white/20 text-xs ml-1">Reviews for everything that matters</span>
-          </div>
-          <nav className="flex items-center gap-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                id={`nav-${cat.toLowerCase()}`}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${activeCategory === cat
-                  ? "bg-amber-500 text-black"
-                  : "text-white/50 hover:text-white hover:bg-white/8"
-                  }`}
-              >
-                {CATEGORY_ICONS[cat]} {cat}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <Header
+        categories={categories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+      />
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         {/* ── Hero section (featured) ── */}
         {activeCategory === "All" && (
           <section className="mb-12">
             <div className="flex items-baseline justify-between mb-5">
-              <h2 className="text-xs font-semibold text-white/40 uppercase tracking-widest">
-                ✦ Featured Reviews
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <FaFire className="text-orange-500 w-3 h-3" /> Featured Reviews
               </h2>
-              <span className="text-white/30 text-xs">{featured.length} picks</span>
+              <span className="text-slate-400 text-xs font-medium">{featured.length} picks</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {featured.map((r) => (
@@ -345,18 +350,20 @@ export default function Home() {
         {/* ── Section header ── */}
         <section>
           <div className="flex items-baseline justify-between mb-6">
-            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-widest">
-              {activeCategory === "All"
-                ? "✦ More Reviews"
-                : `${CATEGORY_ICONS[activeCategory]} ${activeCategory} Reviews`}
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              {activeCategory === "All" ? (
+                <><FaStar className="text-yellow-500 w-3 h-3" /> More Reviews</>
+              ) : (
+                <>{(() => { const I = CATEGORY_ICON_COMPONENTS[activeCategory]; return <I className="w-3 h-3 text-slate-400" />; })()} {activeCategory} Reviews</>
+              )}
             </h2>
-            <span className="text-white/30 text-xs">{filtered.length} reviews</span>
+            <span className="text-slate-400 text-xs font-medium">{filtered.length} reviews</span>
           </div>
 
           {filtered.length === 0 ? (
-            <div className="text-center py-24 text-white/20">
-              <p className="text-4xl mb-3">🍿</p>
-              <p className="text-sm">No reviews in this category yet.</p>
+            <div className="text-center py-24 text-slate-400">
+              <FaFilm className="text-4xl mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-medium">No reviews in this category yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -368,16 +375,16 @@ export default function Home() {
         </section>
 
         {/* ── Stats bar ── */}
-        <div className="mt-16 grid grid-cols-3 gap-4 border-t border-white/8 pt-10">
+        <div className="mt-16 grid grid-cols-3 gap-4 border-t border-slate-200 pt-10">
           {(["Movies", "Shows", "Games"] as const).map((cat) => {
             const items = REVIEWS.filter((r) => r.category === cat);
             const avg = items.reduce((s, r) => s + r.rating, 0) / items.length;
             return (
               <div key={cat} className="text-center">
-                <span className="text-3xl block mb-1">{CATEGORY_ICONS[cat]}</span>
-                <span className="text-white font-bold text-xl block">{items.length}</span>
-                <span className="text-white/40 text-xs">{cat} reviewed</span>
-                <span className="text-amber-400 text-xs block mt-0.5">
+                {(() => { const I = CATEGORY_ICON_COMPONENTS[cat as Category]; return <I className="text-3xl text-yellow-400 block mb-1 mx-auto" />; })()}
+                <span className="text-slate-900 font-black text-2xl block">{items.length}</span>
+                <span className="text-slate-500 text-xs font-medium">{cat} reviewed</span>
+                <span className="text-yellow-600 font-bold text-xs block mt-0.5">
                   avg {avg.toFixed(1)}/10
                 </span>
               </div>
@@ -387,9 +394,7 @@ export default function Home() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/8 mt-10 py-8 text-center text-white/25 text-xs">
-        Blitz Critics · Reviews for Movies, Shows & Games
-      </footer>
+      <Footer />
     </div>
   );
 }
