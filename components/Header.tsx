@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FaBolt, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { createClient } from "@/lib/supabase/client";
 import { Category, CATEGORY_ICON_COMPONENTS } from "../app/page";
+import SearchBar from "./SearchBar";
 
 interface HeaderProps {
     categories: Category[];
@@ -62,14 +63,18 @@ export default function Header({ categories, activeCategory, setActiveCategory }
         <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/70 backdrop-blur-xl shadow-sm shadow-slate-200/50 transition-all duration-300">
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* Logo */}
-                <div className="flex items-center gap-2.5 group cursor-pointer">
+                <div className="flex items-center gap-2.5 group cursor-pointer whitespace-nowrap">
                     <FaBolt className="text-yellow-500 w-4 h-4 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm" />
-                    <span className="text-xl font-black tracking-tight bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent drop-shadow-sm">
+                    <span className="text-xl font-black tracking-tight bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent drop-shadow-sm hidden sm:inline-block">
                         Blitz Critics
                     </span>
-                    <span className="text-slate-400 font-medium text-xs ml-1 hidden sm:inline-block border-l border-slate-200 pl-3">
-                        Reviews for everything that matters
+                    <span className="text-slate-400 font-medium text-xs ml-1 hidden xl:inline-block border-l border-slate-200 pl-3">
+                        Reviews
                     </span>
+                </div>
+
+                <div className="flex-1 px-4 flex justify-end lg:justify-center">
+                    <SearchBar />
                 </div>
 
                 {/* Nav & Auth */}
